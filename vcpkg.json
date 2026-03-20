@@ -1,0 +1,8 @@
+{
+    "name": "maritime-traffic-monitoring",
+    "version": "0.1.0",
+    "dependencies": [
+        "libpqxx",
+        "crow"
+    ]
+}
