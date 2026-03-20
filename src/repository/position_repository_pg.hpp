@@ -28,8 +28,4 @@ private:
 
     template <typename T>
     static std::optional<T> readOptional(const pqxx::row& row, const char* column);
-
-    static std::string toPgTimestamp(const std::chrono::system_clock::time_point& tp);
-
-    static std::chrono::system_clock::time_point fromPgTimestamp(const std::string& value);
 };

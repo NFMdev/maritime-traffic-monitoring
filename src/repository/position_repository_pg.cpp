@@ -16,7 +16,7 @@ void PositionRepositoryPg::save(const PositionReport &report) {
         auto conn = pool_.acquire();
         pqxx::work tx(*conn);
 
-        tx.exec_params(
+        tx.exec(
             R"(
                 INSERT INTO vessels (mmsi, updated_at)
                 VALUES ($1, NOW())
@@ -25,20 +25,23 @@ void PositionRepositoryPg::save(const PositionReport &report) {
             )",
             report.mmsi);
 
-        tx.exec_params(
+        tx.exec(
             R"(
                 INSERT INTO position_reports (mmsi, latitude, longitude, sog_knots, cog_degrees,
                 true_heading, navigational_status, ais_timestamp)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             )",
-            report.mmsi,
-            report.latitude,
-            report.longitude,
-            report.sogKnots,
-            report.cogDegrees,
-            report.trueHeading,
-            report.navStatus,
-            toPgTimestamp(report.aisTimestamp));
+            pqxx::params{
+                report.mmsi,
+                report.latitude,
+                report.longitude,
+                report.sogKnots,
+                report.cogDegrees,
+                report.trueHeading,
+                report.navStatus,
+                time_utils::to_pg_timestamp(report.aisTimestamp)
+            }
+        );
 
         tx.commit();
     } catch (const std::exception &e) {
@@ -57,7 +60,7 @@ std::optional<PositionReport> PositionRepositoryPg::findLatestByMmsi(long long m
         auto conn = pool_.acquire();
         pqxx::read_transaction tx(*conn);
 
-        const pqxx::result result = tx.exec_params(
+        const pqxx::result result = tx.exec(
             R"(
                     SELECT mmsi, latitude, longitude, sog_knots, cog_degrees,
                     true_heading, navigational_status, ais_timestamp
@@ -94,7 +97,7 @@ std::vector<PositionReport> PositionRepositoryPg::findByMmsiAndTimeRange(
         auto conn = pool_.acquire();
         pqxx::read_transaction tx(*conn);
 
-        const pqxx::result result = tx.exec_params(
+        const pqxx::result result = tx.exec(
             R"(
                     SELECT mmsi, latitude, longitude, sog_knots, cog_degrees,
                     true_heading, navigational_status, ais_timestamp
@@ -102,9 +105,12 @@ std::vector<PositionReport> PositionRepositoryPg::findByMmsiAndTimeRange(
                     WHERE mmsi = $1 AND ais_timestamp BETWEEN $2 AND $3
                     ORDER BY ais_timestamp DESC
                 )",
-            mmsi,
-            toPgTimestamp(from),
-            toPgTimestamp(to));
+            pqxx::params{
+                mmsi,
+                time_utils::to_pg_timestamp(from),
+                time_utils::to_pg_timestamp(to)
+            }
+        );
 
         std::vector<PositionReport> reports;
         for (const auto &row : result) {
@@ -128,11 +134,11 @@ PositionReport PositionRepositoryPg::mapToPositionReport(const pqxx::row &row)
         .mmsi = row["mmsi"].as<long long>(),
         .latitude = row["latitude"].as<double>(),
         .longitude = row["longitude"].as<double>(),
-        .sogKnots = readOptional<double>(row, "sog_knots"),
-        .cogDegrees = readOptional<double>(row, "cog_degrees"),
-        .trueHeading = readOptional<double>(row, "true_heading"),
+        .sogKnots = row["sog_knots"].as<double>(),
+        .cogDegrees = row["cog_degrees"].as<double>(),
+        .trueHeading = row["true_heading"].as<double>(),
         .navStatus = readOptional<int>(row, "navigational_status"),
-        .aisTimestamp = fromPgTimestamp(row["ais_timestamp"].c_str())
+        .aisTimestamp = time_utils::from_pg_timestamp(row["ais_timestamp"].c_str())
     };
 }
 

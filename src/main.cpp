@@ -4,19 +4,26 @@
 #include "api/position_controller.hpp"
 #include "repository/position_repository_pg.hpp"
 #include "service/position_service.hpp"
-#include "postgres_pool.hpp"
+#include "db/postgres_pool.hpp"
+#include "config/app_config.hpp"
 
 int main() {
-    crow::SimpleApp app;
+    const AppConfig config = AppConfig::fromEnvironment();
 
-    // Initialize PostgreSQL connection pool
-    auto pgPool = std::make_shared<PostgresPool>("postgresql://user:password@localhost:5432/maritime_db");
-    PositionRepositoryPg positionRepository(*pgPool);
-    PositionService positionService(positionRepository);
+    PostgresPool PostgresPool(config.database.toConnectionString());
+    PositionRepositoryPg PositionRepository(PostgresPool);
+    PositionService positionService(PositionRepository);
+
+    crow::SimpleApp app;
 
     registerHealthRoutes(app);
     registerPositionRoutes(app, positionService);
 
-    app.port(8080).multithreaded().run();
+    if (config.server.multithreaded) {
+        app.port(config.server.port).multithreaded().run();
+    } else {
+        app.port(config.server.port).run();
+    }
+    
     return 0;
 }

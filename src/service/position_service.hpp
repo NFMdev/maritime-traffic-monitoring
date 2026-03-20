@@ -7,7 +7,7 @@
 
 class PositionService {
 public:
-    explicit PositionService(PositionRepository& repository) : repository_(repository) {}
+    explicit PositionService(PositionRepository& repository);
 
     void ingest(const PositionReport& report);
 

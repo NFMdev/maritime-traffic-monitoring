@@ -7,9 +7,11 @@ find_package(libpqxx REQUIRED)
 
 add_executable(maritime_traffic_monitoring
     src/main.cpp
+    src/config/app_config.cpp
+    src/api/position_controller.cpp
     src/service/position_service.cpp
-    src/repository/position_repository.hpp
-    src/config/config.cpp
+    src/repository/position_repository_pg.cpp
+    src/util/time_utils.cpp
 )
 
 target_include_directories(maritime_traffic_monitoring PRIVATE src)

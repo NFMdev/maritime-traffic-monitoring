@@ -130,4 +130,25 @@ void registerPositionRoutes(crow::SimpleApp& app, PositionService& positionServi
             return jsonError(500, "Internal server error");
         }
     });
+
+    CROW_ROUTE(app, "/api/v1/positions/<string>/history?from=<string>&to=<string>")
+    .methods(crow::HTTPMethod::GET)
+    ([&positionService](const std::string& mmsi, const std::string& fromStr, const std::string& toStr) {
+        try {
+            const auto from = time_utils::from_iso_utc(fromStr);
+            const auto to = time_utils::from_iso_utc(toStr);
+            const auto reports = positionService.history(static_cast<long long>(std::stoll(mmsi)), from, to);
+            crow::json::wvalue json;
+            for (size_t i = 0; i < reports.size(); ++i) {
+                json[std::to_string(i)] = positionReportToJson(reports[i]);
+            }
+            return crow::response{200, json};
+        } catch (const ValidationException& ex) {
+            return jsonError(400, ex.what());
+        } catch (const DatabaseException& ex) {
+            return jsonError(500, "Internal database error");
+        } catch (const std::exception& ex) {
+            return jsonError(500, "Internal server error");
+        }
+    });
 }
