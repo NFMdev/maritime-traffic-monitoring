@@ -159,7 +159,7 @@ Incoming position reports are validated before persistence:
 
 The repository includes a `docker-compose.yml` with PostgreSQL and app service definitions, but there is currently no `Dockerfile` in the project root. That means the database service is usable as-is, while the application service definition is not yet buildable without adding a Dockerfile.
 
-## Incoming Features
+## Upcoming Features
 
 Planned next steps for the project include expanding beyond direct position ingestion into external AIS data integration. The main idea is to consume third-party AIS APIs, normalize the incoming payloads, and feed them into the existing storage and query flow.
 
