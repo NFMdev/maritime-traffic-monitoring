@@ -9,9 +9,9 @@
 #include <iomanip>
 #include <stdexcept>
 
-PositionRepositoryPg::PositionRepositoryPg(const PostgresPool &pool) : pool_(pool) {}
+PositionRepositoryPg::PositionRepositoryPg(const PostgresPool& pool) : pool_(pool) {}
 
-void PositionRepositoryPg::save(const PositionReport &report) {
+void PositionRepositoryPg::save(const PositionReport& report) {
     try {
         auto conn = pool_.acquire();
         pqxx::work tx(*conn);
@@ -62,13 +62,13 @@ std::optional<PositionReport> PositionRepositoryPg::findLatestByMmsi(long long m
 
         const pqxx::result result = tx.exec(
             R"(
-                    SELECT mmsi, latitude, longitude, sog_knots, cog_degrees,
-                    true_heading, navigational_status, ais_timestamp
-                    FROM position_reports
-                    WHERE mmsi = $1
-                    ORDER BY ais_timestamp DESC
-                    LIMIT 1
-                )",
+                SELECT mmsi, latitude, longitude, sog_knots, cog_degrees,
+                true_heading, navigational_status, ais_timestamp
+                FROM position_reports
+                WHERE mmsi = $1
+                ORDER BY ais_timestamp DESC
+                LIMIT 1
+            )",
             mmsi);
 
         if (result.empty())

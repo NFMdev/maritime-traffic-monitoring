@@ -1,7 +1,7 @@
 CREATE TABLE vessels (
     mmsi BIGINT PRIMARY KEY,
     imo BIGINT,
-    name VARCHAR(255),
+    vessel_name VARCHAR(255),
     callsign VARCHAR(100),
     vessel_type INTEGER,
     length_m NUMERIC(10, 2),

@@ -5,9 +5,9 @@ services:
     image: postgres:18
     container_name: maritime-traffic-postgres
     environment:
-      POSTGRES_DB: maritime_traffic
-      POSTGRES_USER: monitor
-      POSTGRES_PASSWORD: monitor_pass
+      POSTGRES_DB: ${DB_NAME:-maritime_traffic}
+      POSTGRES_USER: ${DB_USER:-monitor}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-monitor_pass}
     ports:
       - "5432:5432"
     volumes:
@@ -19,14 +19,14 @@ services:
     depends_on:
       - postgres
     environment:
-      APP_PORT: 8080
-      APP_MULTITHREADED: "true"
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: maritime_traffic
-      DB_USER: monitor
-      DB_PASSWORD: monitor_pass
-      DB_SSLMODE: disable
+      APP_PORT: ${APP_PORT:-8080}
+      APP_MULTITHREADED: ${APP_MULTITHREADED:-true}
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-maritime_traffic}
+      DB_USER: ${DB_USER:-monitor}
+      DB_PASSWORD: ${DB_PASSWORD:-monitor_pass}
+      DB_SSLMODE: ${DB_SSLMODE:-disable}
     ports:
       - "8080:8080"
 
